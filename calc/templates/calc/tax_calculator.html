@@ -20,19 +20,21 @@
             <div class="calculator-header">
                 <h1><i class="fas fa-car"></i> Vehicle Tax Calculator</h1>
                 <p class="mb-0">Gandaki Province, Nepal</p>
-                <small>Advanced Fiscal Year Based Calculation</small>
             </div>
 
             <!-- Form Section -->
             <div class="form-section">
-                <form id="taxCalculatorForm">
+                <div id="alerts"></div>
+
+                <form id="taxForm" method="post">
                     {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="reg_type" class="form-label">
-                                <i class="fas fa-id-card"></i> Registration Type
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-id-card"></i> Registration Type *
                             </label>
-                            <select class="form-select" id="reg_type" name="reg_type" required>
+                            <select class="form-select" name="reg_type" required>
                                 <option value="">Select Registration Type</option>
                                 {% for reg_type in reg_types %}
                                 <option value="{{ reg_type.id }}"
@@ -44,11 +46,11 @@
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label">
-                                <i class="fas fa-tags"></i> Vehicle Category
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-tags"></i> Vehicle Category *
                             </label>
-                            <select class="form-select" id="category" name="category" required>
+                            <select class="form-select" name="category" id="category" required>
                                 <option value="">Select Vehicle Category</option>
                                 {% for category in categories %}
                                 <option value="{{ category.id }}" data-has-cc="{{ category.has_cc_range }}">
@@ -59,72 +61,66 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3 cc-range-input">
-                            <label for="cc_power" class="form-label">
-                                <i class="fas fa-tachometer-alt"></i> CC/Power/KW
+                    <div class="row mb-3" id="ccRow" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-tachometer-alt"></i> CC/Power/KW *
                             </label>
-                            <input type="number" class="form-control" id="cc_power" name="cc_power"
-                                   step="0.01" placeholder="Enter CC/Power in numbers">
+                            <input type="number" class="form-control" name="cc_power"
+                                   step="0.01" placeholder="Enter CC/Power value">
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="last_paid_date" class="form-label">
-                                <i class="fas fa-calendar-check"></i> Last Paid Date (BS)
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-check"></i> Last Paid Date (BS) *
                             </label>
-                            <input type="text" class="form-control" id="last_paid_date" name="last_paid_date"
-                                   placeholder="YYYY-MM-DD (e.g., 2081-04-10)" required>
+                            <input type="text" class="form-control date-input" name="last_paid_date"
+                                   placeholder="YYYY-MM-DD" required>
                             <small class="text-muted">Nepali date format</small>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="next_payment_date" class="form-label">
-                                <i class="fas fa-calendar-plus"></i> Next Payment Date (BS)
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-plus"></i> Next Payment Date (BS) *
                             </label>
-                            <input type="text" class="form-control" id="next_payment_date" name="next_payment_date"
-                                   placeholder="YYYY-MM-DD (e.g., 2081-10-04)" required>
+                            <input type="text" class="form-control date-input" name="next_payment_date"
+                                   placeholder="YYYY-MM-DD" required>
                             <small class="text-muted">Nepali date format</small>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12 text-center">
-                            <button type="submit" class="btn btn-calculate">
-                                <i class="fas fa-calculator"></i> Calculate Tax
-                            </button>
-                        </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-calculate">
+                            <i class="fas fa-calculator"></i> Calculate Tax
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
                     </div>
                 </form>
 
-                <!-- Loading Section -->
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                    <p class="mt-2">Calculating your tax...</p>
+                <!-- Loading -->
+                <div class="loading" id="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Calculating...</p>
                 </div>
-
-                <!-- Error Message -->
-                <div class="error-message" id="errorMessage"></div>
-
-                <!-- Success Message -->
-                <div class="success-message" id="successMessage"></div>
-
-                <!-- Warning Message -->
-                <div class="warning-message" id="warningMessage"></div>
             </div>
 
             <!-- Results Section -->
-            <div class="result-section" id="resultsSection">
-                <h3><i class="fas fa-receipt"></i> Tax Calculation Results</h3>
-                <div id="calculationResults"></div>
-            </div>
+            <div class="result-section" id="results"></div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{% static 'js/custom.js' %}"></script>
+
+    <script>
+        // Pass Django data to JavaScript
+        window.calculateUrl = "{% url 'calc:calculate_tax' %}";
+    </script>
 </body>
 </html>
