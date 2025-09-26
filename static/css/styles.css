@@ -1,0 +1,290 @@
+/* Vehicle Tax Calculator Styles */
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.calculator-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    margin: 30px auto;
+    max-width: 1200px;
+}
+
+.calculator-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 20px 20px 0 0;
+    text-align: center;
+}
+
+.form-section {
+    padding: 30px;
+}
+
+.result-section {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 0 0 20px 20px;
+    display: none;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.btn-calculate {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 15px 40px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-calculate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+    color: white;
+}
+
+.calculation-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-left: 5px solid #3498db;
+}
+
+.total-card {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    border-left: 5px solid #27ae60;
+}
+
+.case-info-card {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+    border-left: 5px solid #f39c12;
+}
+
+.penalty-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+}
+
+.renewal-badge {
+    background: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+}
+
+.case-badge {
+    background: #9b59b6;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+}
+
+.cc-range-input {
+    display: none;
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.error-message {
+    background: #e74c3c;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: none;
+}
+
+.case-note {
+    background: #ecf0f1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    color: #34495e;
+    margin-top: 10px;
+}
+
+.fiscal-year-details {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.penalty-detail {
+    background: rgba(231, 76, 60, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+    border-left: 3px solid #e74c3c;
+}
+
+.rules-card {
+    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+    color: white;
+    border-left: 5px solid #8e44ad;
+}
+
+.rules-card ul {
+    margin-bottom: 0;
+}
+
+.rules-card li {
+    margin-bottom: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calculator-container {
+        margin: 15px;
+        border-radius: 15px;
+    }
+
+    .calculator-header {
+        padding: 20px;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .form-section {
+        padding: 20px;
+    }
+
+    .result-section {
+        padding: 20px;
+    }
+
+    .calculation-card {
+        padding: 15px;
+    }
+
+    .fiscal-year-details .row {
+        text-align: center;
+    }
+
+    .fiscal-year-details .col-md-3 {
+        margin-bottom: 10px;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+
+    .calculator-container {
+        box-shadow: none;
+        margin: 0;
+    }
+
+    .form-section {
+        display: none;
+    }
+
+    .result-section {
+        display: block !important;
+        background: white;
+        padding: 20px;
+    }
+
+    .btn-calculate {
+        display: none;
+    }
+}
+
+/* Animation classes */
+.fadeIn {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slideIn {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Loading animation */
+.loading .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Success/Error states */
+.success-message {
+    background: #27ae60;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: none;
+}
+
+.warning-message {
+    background: #f39c12;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: none;
+}
+
+/* Custom scrollbar */
+.result-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.result-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.result-section::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 10px;
+}
+
+.result-section::-webkit-scrollbar-thumb:hover {
+    background: #2980b9;
+}
