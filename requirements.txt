@@ -1,0 +1,4 @@
+Django==5.2.6
+django-import-export>=3.0.0
+django-nepali-datetime-field>=1.0.0
+nepali-date>=2.0.0
