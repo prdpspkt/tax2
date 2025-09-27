@@ -1,126 +1,336 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicle Tax Calculator - Gandaki Province</title>
-    {% load static %}
+{% extends 'base.html' %}
+{% load static %}
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <div class="calculator-container">
-            <!-- Header -->
-            <div class="calculator-header">
-                <h1><i class="fas fa-car"></i> Vehicle Tax Calculator</h1>
-                <p class="mb-0">Gandaki Province, Nepal</p>
-            </div>
+{% block title %}Vehicle Tax Calculator - Gandaki Province{% endblock %}
 
-            <!-- Form Section -->
-            <div class="form-section">
-                <div id="alerts"></div>
+{% block extra_css %}
+<link href="{% static 'css/styles.css' %}" rel="stylesheet">
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
 
-                <form id="taxForm" method="post">
-                    {% csrf_token %}
+    .form-header {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                <i class="fas fa-id-card"></i> Registration Type *
-                            </label>
-                            <select class="form-select" name="reg_type" required>
-                                <option value="">Select Registration Type</option>
-                                {% for reg_type in reg_types %}
-                                <option value="{{ reg_type.id }}"
-                                        data-ambulance="{{ reg_type.is_ambulance }}"
-                                        data-income-tax="{{ reg_type.needs_income_tax }}">
-                                    {{ reg_type.name }} ({{ reg_type.name_en }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
+    .form-body {
+        padding: 2rem;
+    }
 
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                <i class="fas fa-tags"></i> Vehicle Category *
-                            </label>
-                            <select class="form-select" name="category" id="category" required>
-                                <option value="">Select Vehicle Category</option>
-                                {% for category in categories %}
-                                <option value="{{ category.id }}" data-has-cc="{{ category.has_cc_range }}">
-                                    {{ category.name }} ({{ category.name_en }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
 
-                    <div class="row mb-3" id="ccRow" style="display: none;">
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                <i class="fas fa-tachometer-alt"></i> CC/Power/KW *
-                            </label>
-                            <input type="number" class="form-control" name="cc_power"
-                                   step="0.01" placeholder="Enter CC/Power value">
-                        </div>
-                    </div>
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                <i class="fas fa-calendar-check"></i> Last Paid Date (BS) *
-                            </label>
-                            <input type="text" class="form-control date-input" name="last_paid_date"
-                                   placeholder="YYYY-MM-DD" required>
-                            <small class="text-muted">Nepali date format</small>
-                        </div>
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
 
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                <i class="fas fa-calendar-plus"></i> Next Payment Date (BS) *
-                            </label>
-                            <input type="text" class="form-control date-input" name="next_payment_date"
-                                   placeholder="YYYY-MM-DD" required>
-                            <small class="text-muted">Nepali date format</small>
-                        </div>
-                    </div>
+    .form-control:focus, .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
 
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-calculate">
-                            <i class="fas fa-calculator"></i> Calculate Tax
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetForm()">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                    </div>
-                </form>
+    .btn-submit {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
 
-                <!-- Loading -->
-                <div class="loading" id="loading">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p>Calculating...</p>
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+        color: white;
+    }
+
+    .field-icon {
+        color: #3498db;
+        margin-right: 0.5rem;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    #cc-field {
+        display: none;
+    }
+
+    .errorlist {
+        color: #dc3545;
+        list-style: none;
+        padding: 0;
+        margin: 0.25rem 0;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h1><i class="fas fa-car"></i> Vehicle Tax Calculator</h1>
+            <p class="mb-0">Gandaki Province, Nepal</p>
+        </div>
+
+        <div class="form-body">
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h5>Please correct the following errors:</h5>
+                    {{ form.errors }}
                 </div>
-            </div>
+            {% endif %}
 
-            <!-- Results Section -->
-            <div class="result-section" id="results"></div>
+            <form method="post" action="{% url 'calc:calculate_tax' %}" id="taxCalculatorForm">
+                {% csrf_token %}
+
+                <!-- Registration Type -->
+                <div class="form-group">
+                    <label for="{{ form.reg_type.id_for_label }}" class="form-label">
+                        <i class="fas fa-id-card field-icon"></i>Registration Type *
+                    </label>
+                    <select name="{{ form.reg_type.name }}" id="{{ form.reg_type.id_for_label }}" class="form-select" required>
+                        <option value="">Select Registration Type</option>
+                        {% for reg_type in reg_types %}
+                        <option value="{{ reg_type.id }}"
+                                data-ambulance="{{ reg_type.is_ambulance|yesno:'true,false' }}"
+                                data-income-tax="{{ reg_type.needs_income_tax|yesno:'true,false' }}"
+                                data-tax-type="{{ reg_type.tax_type }}"
+                                {% if form.reg_type.value == reg_type.id|stringformat:"s" %}selected{% endif %}>
+                            {{ reg_type.name }} ({{ reg_type.name_en }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.reg_type.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.reg_type.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Vehicle Category -->
+                <div class="form-group">
+                    <label for="{{ form.category.id_for_label }}" class="form-label">
+                        <i class="fas fa-tags field-icon"></i>Vehicle Category *
+                    </label>
+                    <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}" class="form-select" required>
+                        <option value="">Select Vehicle Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}"
+                                data-has-cc="{{ category.has_cc_range|yesno:'true,false' }}"
+                                {% if form.category.value == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }} ({{ category.name_en }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.category.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.category.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- CC/Power Field (Hidden by default) -->
+                <div class="form-group" id="cc-field">
+                    <label for="{{ form.cc_power.id_for_label }}" class="form-label">
+                        <i class="fas fa-tachometer-alt field-icon"></i>CC/Power/KW *
+                    </label>
+                    {{ form.cc_power }}
+                    {% if form.cc_power.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.cc_power.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="help-text">Enter the engine capacity in CC or power in KW</div>
+                </div>
+
+                <!-- Date Fields -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.last_paid_date.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-check field-icon"></i>Last Paid Date (BS) *
+                            </label>
+                            {{ form.last_paid_date }}
+                            {% if form.last_paid_date.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.last_paid_date.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <div class="help-text">Bikram Sambat format (e.g., 2080-01-15)</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.next_payment_date.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-plus field-icon"></i>Next Payment Date (BS) *
+                            </label>
+                            {{ form.next_payment_date }}
+                            {% if form.next_payment_date.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.next_payment_date.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <div class="help-text">Bikram Sambat format (e.g., 2081-01-15)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group text-center mt-4">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-calculator"></i> Calculate Tax
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'js/custom.js' %}"></script>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
+    const ccField = document.getElementById('cc-field');
+    const ccInput = document.getElementById('{{ form.cc_power.id_for_label }}');
 
-    <script>
-        // Pass Django data to JavaScript
-        window.calculateUrl = "{% url 'calc:calculate_tax' %}";
-    </script>
-</body>
-</html>
+    // Add proper classes to form fields
+    categorySelect.classList.add('form-select');
+    ccInput.classList.add('form-control');
+    ccInput.setAttribute('step', '0.01');
+    ccInput.setAttribute('min', '0');
+    ccInput.setAttribute('placeholder', 'Enter CC/Power/KW value');
+
+    // Add classes to date inputs
+    const lastPaidInput = document.getElementById('{{ form.last_paid_date.id_for_label }}');
+    const nextPaymentInput = document.getElementById('{{ form.next_payment_date.id_for_label }}');
+
+    lastPaidInput.classList.add('form-control');
+    lastPaidInput.setAttribute('placeholder', 'YYYY-MM-DD');
+    lastPaidInput.setAttribute('pattern', '\\d{4}-\\d{2}-\\d{2}');
+    lastPaidInput.setAttribute('maxlength', '10');
+
+    nextPaymentInput.classList.add('form-control');
+    nextPaymentInput.setAttribute('placeholder', 'YYYY-MM-DD');
+    nextPaymentInput.setAttribute('pattern', '\\d{4}-\\d{2}-\\d{2}');
+    nextPaymentInput.setAttribute('maxlength', '10');
+
+    // Check initial state for CC field
+    function checkCCField() {
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        const hasCc = selectedOption.getAttribute('data-has-cc') === 'true';
+
+        if (hasCc) {
+            ccField.style.display = 'block';
+            ccInput.required = true;
+        } else {
+            ccField.style.display = 'none';
+            ccInput.required = false;
+            ccInput.value = '';
+        }
+    }
+
+    // Check on page load
+    checkCCField();
+
+    // Show/hide CC field based on category selection
+    categorySelect.addEventListener('change', checkCCField);
+
+    // Date formatting for BS dates
+    function formatBSDate(input) {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+
+            if (value.length >= 4) {
+                value = value.substring(0, 4) + '-' + value.substring(4);
+            }
+            if (value.length >= 7) {
+                value = value.substring(0, 7) + '-' + value.substring(7, 9);
+            }
+
+            e.target.value = value;
+        });
+    }
+
+    // Apply date formatting to both date fields
+    formatBSDate(lastPaidInput);
+    formatBSDate(nextPaymentInput);
+
+    // Form validation
+    document.getElementById('taxCalculatorForm').addEventListener('submit', function(e) {
+        const lastPaidDate = lastPaidInput.value;
+        const nextPaymentDate = nextPaymentInput.value;
+
+        // Basic date validation
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (!datePattern.test(lastPaidDate)) {
+            e.preventDefault();
+            alert('Please enter a valid last paid date in YYYY-MM-DD format');
+            return;
+        }
+
+        if (!datePattern.test(nextPaymentDate)) {
+            e.preventDefault();
+            alert('Please enter a valid next payment date in YYYY-MM-DD format');
+            return;
+        }
+
+        // Check if next payment date is after last paid date
+        if (lastPaidDate >= nextPaymentDate) {
+            e.preventDefault();
+            alert('Next payment date must be after the last paid date');
+            return;
+        }
+
+        // Check if CC is required and provided
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        const hasCc = selectedOption.getAttribute('data-has-cc') === 'true';
+        const ccValue = ccInput.value;
+
+        if (hasCc && (!ccValue || parseFloat(ccValue) <= 0)) {
+            e.preventDefault();
+            alert('Please enter a valid CC/Power/KW value for this vehicle category');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,13 +1,11 @@
+import nepali_datetime
 from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from datetime import datetime
-from decimal import Decimal
 import json
 
-from .models import FiscalYear, RegType, Category, CCRange, TaxRate, IncomeTaxRate
+from .helper import get_taxes, calculated_taxes
+from .models import FiscalYear, RegType, Category, CCRange, TaxRate
 from .forms import TaxCalculatorForm
+
 
 
 def tax_calculator(request):
@@ -47,14 +45,26 @@ def tax_calculator(request):
 
     return render(request, 'calc/tax_calculator.html', context)
 
-
 def calculate_tax(request):
-    """
-    Calculate tax based on form submission
-    """
-    if request.method != 'POST':
-        return JsonResponse({
-            'success': False,
-            'error': 'Invalid request method'
-        })
-    print(request.POST)
+    form = TaxCalculatorForm(request.POST)
+    if form.is_valid():
+        last_paid_date = form.cleaned_data['last_paid_date']
+        next_payment_date = form.cleaned_data['next_payment_date']
+
+        last_paid_date = nepali_datetime.date(last_paid_date.year, last_paid_date.month,
+                                              last_paid_date.day).to_datetime_date()
+        next_payment_date = nepali_datetime.date(next_payment_date.year, next_payment_date.month,
+                                                 next_payment_date.day).to_datetime_date()
+        reg_type = form.cleaned_data['reg_type']
+        category = form.cleaned_data['category']
+        cc_power = form.cleaned_data['cc_power']
+
+        calculated_taxes(next_payment_date, last_paid_date, reg_type, category, cc_power)
+
+        taxes = get_taxes(due_date=next_payment_date, payment_date=last_paid_date)
+        print(taxes)
+
+        return render(request, 'calc/tax_calculator.html', {'form': form})
+
+    else:
+        return render(request, 'calc/tax_calculator.html', {'form': form})

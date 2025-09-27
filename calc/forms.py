@@ -1,9 +1,12 @@
+import nepali_datetime_field
 from django import forms
 from django.core.exceptions import ValidationError
-from decimal import Decimal
 import re
 
+from nepali_datetime_field.forms import NepaliDateField
+
 from .models import RegType, Category, CCRange
+
 
 
 class TaxCalculatorForm(forms.Form):
@@ -28,15 +31,9 @@ class TaxCalculatorForm(forms.Form):
         label="CC/Power/KW"
     )
 
-    last_paid_date = forms.CharField(
-        max_length=10,
-        label="Last Paid Date (BS)"
-    )
+    last_paid_date = NepaliDateField(help_text="Date in BS")
 
-    next_payment_date = forms.CharField(
-        max_length=10,
-        label="Next Payment Date (BS)"
-    )
+    next_payment_date = NepaliDateField(help_text="Date in BS")
 
     def clean_cc_power(self):
         cc_power = self.cleaned_data.get('cc_power')
@@ -57,21 +54,6 @@ class TaxCalculatorForm(forms.Form):
         return self._validate_date(self.cleaned_data.get('next_payment_date'), 'Next Payment Date')
 
     def _validate_date(self, date_str, field_name):
-        if not date_str:
-            raise ValidationError(f"{field_name} is required.")
-
-        if not re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
-            raise ValidationError(f"{field_name} must be in YYYY-MM-DD format.")
-
-        year, month, day = map(int, date_str.split('-'))
-
-        if not (2070 <= year <= 2090):
-            raise ValidationError("Year must be between 2070 and 2090 BS.")
-        if not (1 <= month <= 12):
-            raise ValidationError("Month must be between 1 and 12.")
-        if not (1 <= day <= 32):
-            raise ValidationError("Day must be between 1 and 32.")
-
         return date_str
 
     def clean(self):
