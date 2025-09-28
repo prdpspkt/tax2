@@ -2,16 +2,11 @@ from django import forms
 from django.core.exceptions import ValidationError
 import re
 import nepali_datetime
-from datetime import datetime
-
 from .models import RegType, Category, CCRange, FiscalYear
 from .helper import validate_nepali_date, parse_nepali_date, find_cc_range_for_power
 
 
 class TaxCalculatorForm(forms.Form):
-    """
-    Enhanced Vehicle Tax Calculator Form with comprehensive validation
-    """
 
     reg_type = forms.ModelChoiceField(
         queryset=RegType.objects.all(),

@@ -2,3 +2,6 @@
 .venv
 __pycache__
 */__pycache__/*
+useri/node_modules
+useri/.next
+useri/README.md

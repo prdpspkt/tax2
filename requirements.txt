@@ -1,3 +1,4 @@
 Django==5.2.6
 django-import-export>=3.0.0
 nepali-datetime==1.0.8.4
+graphene-django~=3.2.3

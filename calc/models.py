@@ -16,7 +16,7 @@ class FiscalYear(models.Model):
     vehicle_tax_due_date = models.DateField()
     previous = models.OneToOneField(
         'self',
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name='next'
@@ -48,6 +48,9 @@ class Category(models.Model):
     name_en = models.CharField(max_length=100, unique=True)
     has_cc_range = models.BooleanField(default=False, verbose_name="Has CC/Watt range?")
     reg_type = models.ForeignKey(RegType, on_delete=models.PROTECT, null=True)
+    province = models.ForeignKey(Province, on_delete=models.PROTECT, null=True)
+    fiscal_year = models.ForeignKey(FiscalYear, on_delete=models.PROTECT, null=True)
+
 
     def __str__(self):
         return self.name
