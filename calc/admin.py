@@ -141,4 +141,4 @@ class CCRangeAdmin(ImportExportModelAdmin):
 @admin.register(TaxRate)
 class TaxRateAdmin(ImportExportModelAdmin):
     resource_class = TaxRateResource
-    list_display = ('province', 'fiscal_year', 'reg_type', 'category', 'cc_range', 'fiscal_year', 'vehicle_tax', 'renewal_fee')
+    list_display = ('province', 'fiscal_year', 'reg_type', 'category', 'cc_range', 'private_tax', 'public_tax', 'private_renewal', 'public_renewal')
